@@ -25,7 +25,7 @@ contract Message {
     return ("test string", message);
   }
 
-  function setMessage(string calldata _message) public {
+  function setMessage(string memory _message) public {
     // if(!hasRole(USER_ROLE, msg.sender)){
     //   _grantRole(USER_ROLE, msg.sender);
     // }
