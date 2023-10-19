@@ -2,12 +2,14 @@ import logo from './logo.svg';
 import './App.css';
 
 import { useState } from 'react';
+// import { ethers } from 'ethers';
 
 // TODO: eliminate hard code, currently using ganache address
-const contractAddress = "0xeFf1908bD8364393B2159c521396b3B2c7e6d1ff"
+const contractAddress = "0xb8D45aC8910CF8D11E74F3049e35F08c5fB43242"
 
 // setup web3
 const { Web3 } = require('web3');
+const { ethers } = require('ethers');
 // console.log("instantiated contract with from", messageContract.options.from)
 
 function App() {
@@ -27,6 +29,21 @@ function App() {
       console.log("finished call to getMessage")
     } catch (err) {
       console.log("error fetching message. make sure to setMessage first", err)
+    }
+  }
+
+  async function fetchMessageEthers(){
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    console.log("fetch provider is", provider)
+    const messageContractArtifact = require('./build/contracts/Message');
+    const messageContractABI = messageContractArtifact.abi;
+    const contract = new ethers.Contract(contractAddress, messageContractABI, provider)
+    try {
+      console.log("fetching greeting")
+      const data = await contract.greet()
+      console.log('data: ', data)
+    } catch (err) {
+      console.log("Error: ", err)
     }
   }
 
@@ -112,6 +129,27 @@ function App() {
     } catch(err) {
       console.log("Error setting Message", err)
     }
+  }
+
+  // async function requestAccount() {
+  //   await window.ethereum.request({ method: 'eth_requestAccounts' });
+  // }
+
+  async function setMessageEthers() {
+    if (!message) return
+    // await requestAccount()
+    // console.log("got account during setMessage")
+    const { web3, accounts } = await getWeb3()
+    const provider = window.web3.currentProvider;
+    console.log("got provider during setMessage", provider)
+    // const signer = provider.getSigner()
+    const signer = accounts[0]
+    console.log("got signer during setMessage", signer)
+    const messageContractArtifact = require('./build/contracts/Message');
+    const messageContractABI = messageContractArtifact.abi;
+    const contract = new ethers.Contract(contractAddress, messageContractABI, signer)
+    const transaction = await contract.setMessage(message)
+    await transaction.wait()
   }
 
   // var accountInterval = setInterval(function () {
