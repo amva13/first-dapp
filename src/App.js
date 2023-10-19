@@ -1,16 +1,12 @@
-import logo from './logo.svg';
 import './App.css';
 
 import { useState } from 'react';
-// import { ethers } from 'ethers';
 
 // TODO: eliminate hard code, currently using ganache address
-const contractAddress = "0xb8D45aC8910CF8D11E74F3049e35F08c5fB43242"
+const contractAddress = "0xa9bC08dbF2deBd9DEdA97106ed1D5DA45CF84712"
 
 // setup web3
 const { Web3 } = require('web3');
-const { ethers } = require('ethers');
-// console.log("instantiated contract with from", messageContract.options.from)
 
 function App() {
 
@@ -19,11 +15,9 @@ function App() {
 
   async function fetchMessage() {
     try {
-      // setUserAccountValue(web3.eth.getAccounts()[0])
-      // messageContract.options.from = userAccount
       const {messageContract,_, accounts} = await getContract()
-      // const {_, accounts} = await getWeb3()
       const account = accounts[0]
+      setUserAccountValue(account)
       console.log("invoking getMessage w/ messageContract from account", account)
       await messageContract.methods.getMessage().call().then(console.log)
       console.log("finished call to getMessage")
@@ -32,20 +26,6 @@ function App() {
     }
   }
 
-  async function fetchMessageEthers(){
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    console.log("fetch provider is", provider)
-    const messageContractArtifact = require('./build/contracts/Message');
-    const messageContractABI = messageContractArtifact.abi;
-    const contract = new ethers.Contract(contractAddress, messageContractABI, provider)
-    try {
-      console.log("fetching greeting")
-      const data = await contract.greet()
-      console.log('data: ', data)
-    } catch (err) {
-      console.log("Error: ", err)
-    }
-  }
 
   async function getContract() {
     const {web3, accounts} = await getWeb3();
@@ -73,7 +53,6 @@ function App() {
       // Request account access if needed
       await window.ethereum.enable();
       // Accounts now exposed
-      // return web3;
     } catch (error) {
       console.error(error);
     }
@@ -85,7 +64,6 @@ function App() {
     console.log("running legacy block for web3")
     web3 = window.web3;
     console.log('Injected web3 detected.');
-    // return web3;
   }
   // Fallback to localhost; use dev console port by default...
   else {
@@ -93,63 +71,26 @@ function App() {
     const provider = new Web3.providers.HttpProvider('http://127.0.0.1:9545');
     web3 = new Web3(provider);
     console.log('No web3 instance injected, using Local web3.');
-    // return web3;
   }
-  // const accounts = await web3.eth.getAccounts();
   const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
   console.log("retreived accounts", accounts)
   return {web3: web3, accounts: accounts}
 };
-// async function getAccount() {
-//   await window.ethereum.enable();
-//   const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-//   const account = accounts[0];
-//   console.log("account is", account)
-//   return account;
-//   // window.ethereum.on('accountsChanged', function (accounts) {
-//   //   // Time to reload your interface with accounts[0]!
-//   //   console.log(accounts[0])
-//   //   });
-// }
 
   async function setMessage() {
     try {
       console.log("checking a message is set..")
       if (!message) return
       console.log("setting message", message)
-      // setUserAccountValue(web3.eth.getAccounts()[0])
-      // messageContract.options.from = userAccount
-      // console.log("user account is", userAccount, messageContract.options.from, web3.eth.accounts)
       const {messageContract,_,accounts} = await getContract()
-      // const } = await getWeb3()
       const account = accounts[0]
+      setUserAccountValue(account)
       console.log("invoking setMessage from messageContract with account", account)
       await messageContract.methods.setMessage(message).call().then(() => {console.log("finished .then() call on setMessage")})
-      console.log("finished setting message", message)
+      console.log("finished setting message.. this will not reflect in local testing on truffle for subsequent getMessage calls..", message)
     } catch(err) {
       console.log("Error setting Message", err)
     }
-  }
-
-  // async function requestAccount() {
-  //   await window.ethereum.request({ method: 'eth_requestAccounts' });
-  // }
-
-  async function setMessageEthers() {
-    if (!message) return
-    // await requestAccount()
-    // console.log("got account during setMessage")
-    const { web3, accounts } = await getWeb3()
-    const provider = window.web3.currentProvider;
-    console.log("got provider during setMessage", provider)
-    // const signer = provider.getSigner()
-    const signer = accounts[0]
-    console.log("got signer during setMessage", signer)
-    const messageContractArtifact = require('./build/contracts/Message');
-    const messageContractABI = messageContractArtifact.abi;
-    const contract = new ethers.Contract(contractAddress, messageContractABI, signer)
-    const transaction = await contract.setMessage(message)
-    await transaction.wait()
   }
 
   // var accountInterval = setInterval(function () {
